@@ -1,0 +1,147 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}OpportunityHub{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    <header class="topbar">
+        <div class="container-app py-3">
+            <div class="flex items-center justify-between gap-3">
+                <a href="{% url 'home' %}" class="brand brand-font">OpportunityHub</a>
+
+                <nav class="nav-desktop flex items-center gap-4">
+                    <a href="{% url 'home' %}" class="nav-link">Home</a>
+                    {% if request.user.is_authenticated %}
+                        {% if urgent_count > 0 %}
+                            <button type="button" id="open-urgency-modal" class="btn btn-secondary">Urgent {{ urgent_count }}</button>
+                        {% endif %}
+                        <a href="{% url 'submit_opportunity' %}" class="nav-link">Submit</a>
+                        <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+                        <a href="{% url 'timeline' %}" class="nav-link">Timeline</a>
+                        <a href="{% url 'saved_opportunities' %}" class="nav-link">Saved</a>
+                        <a href="{% url 'profile' %}" class="nav-link">{{ request.user.username }}</a>
+                        <form method="post" action="{% url 'signout' %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">Sign out</button></form>
+                    {% else %}
+                        <a href="{% url 'signin' %}" class="nav-link">Sign in</a>
+                        <a href="{% url 'signup' %}" class="btn btn-primary">Sign up</a>
+                    {% endif %}
+                </nav>
+
+                <button id="menu-toggle" class="mobile-toggle btn btn-secondary" type="button">Menu</button>
+            </div>
+            <div id="mobile-menu" class="mobile-menu pt-3">
+                <div class="panel p-3">
+                    <div class="grid gap-2">
+                        <a href="{% url 'home' %}" class="nav-link">Home</a>
+                        {% if request.user.is_authenticated %}
+                            {% if urgent_count > 0 %}
+                                <button type="button" id="open-urgency-modal-mobile" class="btn btn-secondary">Urgent {{ urgent_count }}</button>
+                            {% endif %}
+                            <a href="{% url 'submit_opportunity' %}" class="nav-link">Submit</a>
+                            <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+                            <a href="{% url 'timeline' %}" class="nav-link">Timeline</a>
+                            <a href="{% url 'saved_opportunities' %}" class="nav-link">Saved</a>
+                            <a href="{% url 'profile' %}" class="nav-link">Profile</a>
+                            <form method="post" action="{% url 'signout' %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">Sign out</button></form>
+                        {% else %}
+                            <a href="{% url 'signin' %}" class="nav-link">Sign in</a>
+                            <a href="{% url 'signup' %}" class="btn btn-primary">Sign up</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container-app py-8 md:py-10">
+        {% if messages %}
+            <div class="space-y-2 mb-6">
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'success' %}text-emerald-800 border-emerald-200 bg-emerald-50{% elif message.tags == 'warning' %}text-amber-800 border-amber-200 bg-amber-50{% elif message.tags == 'error' %}text-red-800 border-red-200 bg-red-50{% else %}text-blue-800 border-blue-200 bg-blue-50{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    {% if has_urgent_modal %}
+    <div id="urgency-modal" class="urgency-modal" data-modal-scope="daily" role="dialog" aria-modal="true" aria-labelledby="urgency-title">
+        <div class="urgency-modal__backdrop" data-close-urgency-modal></div>
+        <div class="urgency-modal__panel">
+            <div class="flex items-start justify-between gap-3 mb-3">
+                <div>
+                    <p class="chip mb-1">Urgency Alert</p>
+                    <h2 id="urgency-title" class="text-xl font-semibold">Action Alerts</h2>
+                    <p class="text-sm text-slate-600">
+                        {% if urgent_count > 0 %}
+                            {{ urgent_count }} urgent deadline{% if urgent_count != 1 %}s{% endif %}
+                        {% endif %}
+                        {% if urgent_count > 0 and email_followup_count > 0 %} and {% endif %}
+                        {% if email_followup_count > 0 %}
+                            {{ email_followup_count }} email follow-up{% if email_followup_count != 1 %}s{% endif %}
+                        {% endif %}
+                        need attention.
+                    </p>
+                </div>
+                <button class="btn btn-secondary" type="button" id="close-urgency-modal">Close</button>
+            </div>
+            {% if urgent_count > 0 %}
+            <p class="text-xs uppercase tracking-[0.16em] text-slate-500 mb-2">Urgent Deadlines</p>
+            <div class="space-y-2 max-h-80 overflow-y-auto">
+                {% for item in urgent_opportunities %}
+                <a href="{% url 'opportunity_detail' item.id %}" class="urgency-item">
+                    <div>
+                        <p class="font-semibold text-slate-900">{{ item.company }}</p>
+                        <p class="text-sm text-slate-600">{{ item.role }}</p>
+                    </div>
+                    <div class="text-right">
+                        {% if item.days_left < 0 %}
+                            <p class="urgency-chip urgency-overdue">Overdue</p>
+                        {% elif item.days_left == 0 %}
+                            <p class="urgency-chip urgency-critical">Due Today</p>
+                        {% elif item.days_left <= 1 %}
+                            <p class="urgency-chip urgency-critical">Due in {{ item.days_left }}d</p>
+                        {% else %}
+                            <p class="urgency-chip urgency-soon">Due in {{ item.days_left }}d</p>
+                        {% endif %}
+                        <p class="text-xs text-slate-500 mt-1">{{ item.deadline }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if email_followup_count > 0 %}
+            <p class="text-xs uppercase tracking-[0.16em] text-slate-500 mt-4 mb-2">No Response To Email Alerts (Immediate)</p>
+            <div class="space-y-2 max-h-80 overflow-y-auto">
+                {% for item in email_followup_opportunities %}
+                <a href="{% url 'opportunity_detail' item.id %}" class="urgency-item">
+                    <div>
+                        <p class="font-semibold text-slate-900">{{ item.company }}</p>
+                        <p class="text-sm text-slate-600">{{ item.role }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="urgency-chip urgency-followup">No response</p>
+                        <p class="text-xs text-slate-500 mt-1">Last email: {{ item.last_email_at }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="{% static 'js/site.js' %}"></script>
+</body>
+</html>

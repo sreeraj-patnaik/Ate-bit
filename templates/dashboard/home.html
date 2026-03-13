@@ -1,0 +1,66 @@
+﻿{% extends "base.html" %}
+
+{% block title %}OpportunityHub | AI Opportunity Workspace{% endblock %}
+
+{% block content %}
+<section class="hero-shell p-8 md:p-12 mb-8">
+    <div class="grid lg:grid-cols-2 gap-10 items-center">
+        <div>
+            <div class="chip mb-3">Career Operating System</div>
+            <h1 class="section-title mb-4">Run your opportunities like a product pipeline.</h1>
+            <p class="section-subtitle mb-6">From WhatsApp drops to structured records, notes, timelines, and alerts. Built for speed, clarity, and zero missed deadlines.</p>
+            <div class="flex flex-wrap gap-3">
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'submit_opportunity' %}" class="btn btn-primary">Submit Opportunity</a>
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Open Dashboard</a>
+                    <a href="{% url 'timeline' %}" class="btn btn-secondary">Timeline</a>
+                {% else %}
+                    <a href="{% url 'signup' %}" class="btn btn-primary">Get Started</a>
+                    <a href="{% url 'signin' %}" class="btn btn-secondary">Sign In</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="panel p-5">
+            <p class="chip mb-3">Live Snapshot</p>
+            <div class="metrics" style="grid-template-columns:repeat(2,minmax(0,1fr));">
+                <div class="metric-card metric-blue"><p class="metric-label">Total</p><p class="metric-value">{{ total_count }}</p></div>
+                <div class="metric-card metric-teal"><p class="metric-label">Saved</p><p class="metric-value">{{ saved_count }}</p></div>
+                <div class="metric-card metric-orange"><p class="metric-label">Applied</p><p class="metric-value">{{ applied_count }}</p></div>
+                <div class="metric-card metric-violet"><p class="metric-label">Upcoming</p><p class="metric-value">{{ upcoming_count }}</p></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="grid md:grid-cols-3 gap-4 mb-8">
+    <article class="op-card">
+        <h3 class="text-lg font-semibold mb-1">Smart Ingestion</h3>
+        <p class="text-sm text-slate-600">Paste text or upload screenshots. OCR + LLM parsing structures each opportunity automatically.</p>
+    </article>
+    <article class="op-card">
+        <h3 class="text-lg font-semibold mb-1">Deadline Intelligence</h3>
+        <p class="text-sm text-slate-600">Relative phrases are normalized to real dates. Timeline view keeps near deadlines visible.</p>
+    </article>
+    <article class="op-card">
+        <h3 class="text-lg font-semibold mb-1">Actionable Workflow</h3>
+        <p class="text-sm text-slate-600">Save, note, track status, and receive reminders so opportunities move from intent to action.</p>
+    </article>
+</section>
+
+<section class="mb-4 flex items-center justify-between">
+    <h2 class="text-2xl font-semibold">Latest Opportunities</h2>
+    {% if request.user.is_authenticated %}<a href="{% url 'dashboard' %}" class="text-sm font-semibold text-blue-700">View all</a>{% endif %}
+</section>
+<section class="cards">
+    {% for opportunity in latest_opportunities %}
+        <a href="{% if request.user.is_authenticated %}{% url 'opportunity_detail' opportunity.pk %}{% else %}{% url 'signin' %}{% endif %}" class="op-card">
+            <p class="text-xs uppercase tracking-[0.16em] text-slate-500 mb-1">{{ opportunity.category }}</p>
+            <h3 class="text-lg font-semibold">{{ opportunity.company }}</h3>
+            <p class="text-slate-700">{{ opportunity.role }}</p>
+            <p class="text-sm text-slate-500 mt-2">{{ opportunity.summary|default:opportunity.description|truncatechars:110 }}</p>
+        </a>
+    {% empty %}
+        <p class="section-subtitle">No opportunities yet.</p>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,40 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Submit Opportunity | OpportunityHub{% endblock %}
+
+{% block content %}
+<section class="grid lg:grid-cols-3 gap-5">
+    <aside class="panel p-6 lg:col-span-1 h-fit">
+        <p class="text-xs uppercase tracking-[0.18em] text-slate-500 mb-1">Ingestion Guide</p>
+        <h2 class="text-xl font-semibold mb-3">Submit with confidence</h2>
+        <ul class="text-sm text-slate-700 space-y-2">
+            <li>- Paste message text</li>
+            <li>- Upload screenshot for OCR</li>
+            <li>- Use both for best extraction quality</li>
+            <li>- System auto-sends notification after save</li>
+        </ul>
+    </aside>
+
+    <section class="panel p-6 lg:col-span-2">
+        <p class="text-xs uppercase tracking-[0.18em] text-slate-500 mb-1">Opportunity Ingestion</p>
+        <h1 class="text-2xl font-semibold mb-2">Submit Opportunity</h1>
+        <p class="section-subtitle mb-5">The parser will normalize dates, categorize, detect duplicates, and store clean records.</p>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="text-sm font-semibold block mb-1" for="id_message_text">Message Text</label>
+                {{ form.message_text }}
+            </div>
+            <div>
+                <label class="text-sm font-semibold block mb-1" for="id_image_file">Screenshot/Image (OCR)</label>
+                {{ form.image_file }}
+            </div>
+            {% if form.non_field_errors %}
+                <div class="alert text-red-700 border-red-200 bg-red-50">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">Extract and Save</button>
+        </form>
+    </section>
+</section>
+{% endblock %}

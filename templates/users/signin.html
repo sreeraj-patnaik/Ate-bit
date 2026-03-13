@@ -1,0 +1,18 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Sign In | OpportunityHub{% endblock %}
+
+{% block content %}
+<section class="max-w-md mx-auto panel p-6 md:p-8" style="border-radius:18px;">
+    <p class="text-xs uppercase tracking-[0.18em] text-slate-500 mb-1">Welcome back</p>
+    <h1 class="section-title mb-5">Sign In</h1>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div><label class="text-sm font-semibold block mb-1">Username</label>{{ form.username }}</div>
+        <div><label class="text-sm font-semibold block mb-1">Password</label>{{ form.password }}</div>
+        {% if form.errors %}<p class="text-sm text-red-600">Invalid username or password.</p>{% endif %}
+        <button type="submit" class="btn btn-primary w-full">Sign In</button>
+    </form>
+    <p class="text-sm text-slate-600 mt-4">No account? <a href="{% url 'signup' %}" class="text-blue-700 font-semibold">Create one</a></p>
+</section>
+{% endblock %}

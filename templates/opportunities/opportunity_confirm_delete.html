@@ -1,0 +1,16 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Delete Opportunity | OpportunityHub{% endblock %}
+
+{% block content %}
+<section class="max-w-xl mx-auto glass rounded-3xl p-6 md:p-8">
+    <p class="text-xs uppercase tracking-[0.18em] text-slate-500 mb-1">Destructive action</p>
+    <h1 class="text-2xl font-semibold mb-3">Delete Opportunity</h1>
+    <p class="text-slate-600 mb-6">You are deleting <strong>{{ opportunity.company }} - {{ opportunity.role }}</strong>. This action cannot be undone.</p>
+    <form method="post" class="flex flex-wrap gap-2">
+        {% csrf_token %}
+        <button type="submit" class="btn-secondary border-red-300 text-red-700">Delete permanently</button>
+        <a href="{% url 'opportunity_detail' opportunity.pk %}" class="btn-secondary">Cancel</a>
+    </form>
+</section>
+{% endblock %}

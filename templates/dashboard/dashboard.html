@@ -1,0 +1,90 @@
+﻿{% extends "base.html" %}
+{% load opportunity_extras %}
+
+{% block title %}Dashboard | OpportunityHub{% endblock %}
+
+{% block content %}
+<section class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div>
+        <p class="chip mb-1">Workspace</p>
+        <h1 class="section-title">Dashboard</h1>
+        <p class="section-subtitle mt-2">Search, segment, and act on opportunities with confidence.</p>
+    </div>
+    <a href="{% url 'submit_opportunity' %}" class="btn btn-primary">+ Add Opportunity</a>
+</section>
+
+<form method="get" class="panel p-5 form-grid mb-6">
+    <div style="grid-column:span 2;">
+        <label class="text-xs text-slate-500 mb-1 block">Search</label>
+        <input type="text" name="q" value="{{ search_query }}" placeholder="company, role, summary, eligibility" />
+    </div>
+    <div>
+        <label class="text-xs text-slate-500 mb-1 block">Category</label>
+        <select name="category">
+            <option value="all">All</option>
+            {% for value, label in category_choices %}
+                <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="text-xs text-slate-500 mb-1 block">Status</label>
+        <select name="status">
+            <option value="all">All</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="text-xs text-slate-500 mb-1 block">From</label>
+        <input type="date" name="from" value="{{ deadline_from }}" />
+    </div>
+    <div>
+        <label class="text-xs text-slate-500 mb-1 block">To</label>
+        <input type="date" name="to" value="{{ deadline_to }}" />
+    </div>
+    <div>
+        <label class="text-xs text-slate-500 mb-1 block">Sort</label>
+        <select name="sort">
+            <option value="deadline_asc" {% if sort == 'deadline_asc' %}selected{% endif %}>Soonest</option>
+            <option value="deadline_desc" {% if sort == 'deadline_desc' %}selected{% endif %}>Latest</option>
+            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+            <option value="company" {% if sort == 'company' %}selected{% endif %}>Company</option>
+        </select>
+    </div>
+    <label class="inline-flex items-center gap-2 text-sm text-slate-700" style="grid-column:span 2;">
+        <input type="checkbox" name="saved" value="1" {% if saved_only %}checked{% endif %}> Saved only
+    </label>
+    <div class="flex gap-2" style="grid-column:span 2;">
+        <button type="submit" class="btn btn-primary">Apply</button>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
+
+<section class="cards">
+    {% for opportunity in opportunities %}
+        <article class="op-card flex flex-col gap-3">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.15em] text-slate-500">{{ opportunity.category }}</p>
+                    <h2 class="text-lg font-semibold">{{ opportunity.company }}</h2>
+                    <p class="text-slate-700">{{ opportunity.role }}</p>
+                </div>
+                <span class="badge {{ opportunity|deadline_badge_class }}">{{ opportunity|days_until }}</span>
+            </div>
+            <p class="text-sm text-slate-600">{{ opportunity.summary|default:opportunity.description|truncatechars:125 }}</p>
+            <div class="text-xs text-slate-500 flex items-center justify-between">
+                <span>{{ opportunity.get_status_display }}</span>
+                {% if opportunity.duplicate_count %}<span>Merged {{ opportunity.duplicate_count }}</span>{% endif %}
+            </div>
+            <div class="flex items-center justify-between pt-1">
+                <a href="{% url 'opportunity_detail' opportunity.pk %}" class="text-sm font-semibold text-blue-700">Open</a>
+                <a href="{% url 'toggle_saved' opportunity.pk %}" class="text-sm font-semibold {% if opportunity.is_saved %}text-amber-700{% else %}text-slate-600{% endif %}">{% if opportunity.is_saved %}Bookmarked{% else %}Bookmark{% endif %}</a>
+            </div>
+        </article>
+    {% empty %}
+        <p class="section-subtitle">No opportunities match these filters.</p>
+    {% endfor %}
+</section>
+{% endblock %}

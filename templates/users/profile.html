@@ -1,0 +1,32 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Profile | OpportunityHub{% endblock %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto glass rounded-3xl p-6 md:p-8">
+    <p class="text-xs uppercase tracking-[0.18em] text-slate-500 mb-1">Personal settings</p>
+    <h1 class="section-title mb-2">My Profile</h1>
+    <p class="muted mb-6">Update your details to tailor opportunities and recommendations.</p>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Save Profile</button>
+    </form>
+
+    <div class="panel p-5 mt-6">
+        <p class="chip mb-2">Auto Calendar Sync</p>
+        <h2 class="text-xl font-semibold mb-2">One-time subscription (no repeated downloads)</h2>
+        <p class="text-sm text-slate-600 mb-4">Subscribe once and all future deadlines auto-sync with reminders in your calendar app.</p>
+        <div class="flex flex-wrap gap-2 mb-3">
+            <a href="{{ calendar_feed_webcal }}" class="btn btn-primary">Subscribe (webcal)</a>
+            <a href="{{ calendar_google_subscribe }}" class="btn btn-secondary" target="_blank" rel="noopener">Add by URL (Google)</a>
+            <form method="post" class="inline">
+                {% csrf_token %}
+                <button type="submit" name="regen_calendar_token" value="1" class="btn btn-secondary">Regenerate Feed Link</button>
+            </form>
+        </div>
+        <p class="text-xs text-slate-500 break-all">Feed URL: {{ calendar_feed_http }}</p>
+        <p class="text-xs text-slate-500 mt-1">If your ngrok URL changed or Google shows stale events, regenerate the feed link and subscribe again once.</p>
+    </div>
+</section>
+{% endblock %}
